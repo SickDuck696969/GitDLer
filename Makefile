@@ -13,7 +13,7 @@ TOPDIR ?= $(CURDIR)
 TARGET		:= GitDLer
 APP_TITLE	:= GitDLer
 APP_AUTHOR	:= SickDuck
-APP_VERSION	:= 1.0.0
+APP_VERSION	:= 2.2.0
 BUILD		:= build
 SOURCES		:= source
 DATA		:= data
@@ -27,13 +27,13 @@ ARCH	:=	-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 
 CFLAGS	:=	-Wall -Os -ffunction-sections -fdata-sections -flto $(ARCH) $(DEFINES)
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS	:= $(CFLAGS) -std=gnu++17 -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	$(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs $(ARCH) -flto -Wl,--gc-sections -Wl,-s -Wl,-Map,$(notdir $*.map)                                                                                                                
 
 # CÁC THƯ VIỆN CẦN THIẾT: SDL2, TTF, CURL cho mạng
-LIBS := -lcurl -lSDL2_image -lwebp -ljpeg -lSDL2_ttf -lSDL2 -lEGL -lglapi -ldrm_nouveau -lharfbuzz -lfreetype -lbz2 -lpng -lz -lnx -lm
+LIBS := -lcurl -larchive -llzma -llz4 -lzstd -lexpat -lSDL2_ttf -lSDL2 -lEGL -lglapi -ldrm_nouveau -lharfbuzz -lfreetype -lbz2 -lpng -lz -lnx -lm
 
 #---------------------------------------------------------------------------------
 LIBDIRS	:= $(PORTLIBS) $(LIBNX)

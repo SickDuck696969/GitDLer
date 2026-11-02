@@ -1,48 +1,7 @@
-# C/C++ build artifacts
-*.o
-*.obj
-*.out
-*.a
-*.lib
-*.so
-*.dll
-*.dylib
-*.gch
-*.pch
-*.d
-
-# Nintendo Switch Homebrew specifics (devkitPro / libnx)
-*.nro
+build/
 *.elf
 *.nacp
-*.nso
-build/
-out/
-
-# Local testing & runtime generated files
-# Bỏ qua các file giả lập thẻ SD hoặc config sinh ra khi test trên PC/Emulator
-sdmc/
-repos.txt
-history.txt
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDEs and Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-*.suo
-*.user
-CMakeCache.txt
-CMakeFiles/
-CMakeScripts/
-Makefile.cmake
-cmake_install.cmake
+*.nro
+*.map
+*.obj
+*.exe
