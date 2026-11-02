@@ -274,6 +274,13 @@ struct ArchiveExtractor::Impl {
         stageFile();
     }
 };
+ArchiveCleanup finishArchive(const std::string& path, const ExtractProgress& progress,
+                             bool deleteOriginal, bool cancelled) {
+    if (!deleteOriginal || cancelled || progress.phase != ExtractPhase::Done ||
+        !progress.error.empty() || !progress.saved || progress.skipped || progress.saved != progress.files)
+        return ArchiveCleanup::Kept;
+    return std::remove(path.c_str()) == 0 ? ArchiveCleanup::Deleted : ArchiveCleanup::Failed;
+}
 ArchiveExtractor::ArchiveExtractor(const std::string& source,const std::string& destination,bool replace)
     : impl(new Impl(source,destination,replace)) {}
 ArchiveExtractor::~ArchiveExtractor() = default;

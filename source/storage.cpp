@@ -74,11 +74,14 @@ void loadConfig() {
             auto motion = j.find("reducedMotion"), notes = j.find("largeNotes");
             reducedMotion = motion != j.end() && motion->is_boolean() && motion->get<bool>();
             largeNotes = notes != j.end() && notes->is_boolean() && notes->get<bool>();
+            auto cleanup = j.find("deleteOriginalAfterExtraction");
+            deleteOriginalAfterExtraction = cleanup != j.end() && cleanup->is_boolean() && cleanup->get<bool>();
         }
     }
 }
 void savePreferences() {
-    nlohmann::json j{{"reducedMotion",reducedMotion},{"largeNotes",largeNotes}};
+    nlohmann::json j{{"reducedMotion",reducedMotion},{"largeNotes",largeNotes},
+                     {"deleteOriginalAfterExtraction",deleteOriginalAfterExtraction}};
     std::ofstream out(std::string(CONFIG)+"preferences.json"); out << j.dump(2);
     out.close(); if (!out) notify("Could not save preferences.");
 }

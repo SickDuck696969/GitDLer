@@ -1,6 +1,7 @@
 #include "app.hpp"
 #include <array>
 namespace gitdler::app {
+bool deleteOriginalAfterExtraction = false;
 SDL_Renderer* renderer = nullptr;
 TTF_Font *smallFont = nullptr, *bodyFont = nullptr, *titleFont = nullptr;
 bool compact = true, running = true;

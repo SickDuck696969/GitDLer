@@ -82,6 +82,22 @@ int main(int argc,char** argv) {
     // A parent that is a regular file must not be traversed or overwritten.
     auto blocked = root/"blocked"; fs::create_directory(blocked); std::ofstream(blocked/"folder") << "original";
     assert(run(fixtures/"deflated.zip",blocked).phase == ExtractPhase::Failed && contents(blocked/"folder") == "original");
+    auto cleanupSource = root/"cleanup.zip";
+    fs::copy_file(fixtures/"deflated.zip",cleanupSource);
+    auto cleanupDir = root/"cleanup"; fs::create_directory(cleanupDir);
+    auto complete = run(cleanupSource,cleanupDir);
+    assert(complete.phase == ExtractPhase::Done && complete.saved == complete.files);
+    auto keep = [&](const ExtractProgress& p, bool enabled=true, bool stopped=false) {
+        assert(finishArchive(cleanupSource.generic_string(),p,enabled,stopped) == ArchiveCleanup::Kept);
+        assert(contents(cleanupSource) == contents(fixtures/"deflated.zip"));
+    };
+    keep(complete,false); keep(complete,true,true); keep(skipped); keep(badcrc); keep(cancelled.progress());
+    auto warning = complete; warning.error = "Decoder warning"; keep(warning);
+    auto empty = complete; empty.files = empty.saved = 0; keep(empty);
+    auto partial = complete; ++partial.files; keep(partial);
+    assert(finishArchive(cleanupSource.generic_string(),complete,true,false) == ArchiveCleanup::Deleted);
+    assert(!fs::exists(cleanupSource) && contents(cleanupDir/"folder/hello.txt") == "hello archive");
+    assert(finishArchive(cleanupSource.generic_string(),complete,true,false) == ArchiveCleanup::Failed);
     fs::remove_all(root);
     std::cout << "PASS: ZIP/TAR/compressed streams, signature detection, unsafe paths/links, duplicates, CRC failure, replace/skip, cancellation, source preservation\n";
 }

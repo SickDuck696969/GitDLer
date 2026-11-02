@@ -12,6 +12,10 @@ struct ExtractProgress {
     uint64_t currentBytes = 0, currentTotal = 0, files = 0, saved = 0, skipped = 0;
     bool sizeKnown = true;
 };
+enum class ArchiveCleanup { Kept, Deleted, Failed };
+// Invoke only after the extractor has closed the source archive.
+ArchiveCleanup finishArchive(const std::string& path, const ExtractProgress& progress,
+                             bool deleteOriginal, bool cancelled);
 bool archiveName(const std::string& name);
 bool detectArchive(const std::string& path);
 bool normalizeArchivePath(const std::string& input, std::string& relative);

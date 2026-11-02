@@ -181,6 +181,7 @@ void handleInput(u64 pressed) {
         else if (pressed & HidNpadButton_Y) skipExtraction(true);
         break;
     case Screen::ExtractReview:
+        if (pressed & HidNpadButton_A) { deleteOriginalAfterExtraction = !deleteOriginalAfterExtraction; savePreferences(); break; }
         if (pressed & HidNpadButton_B) goBack(Screen::Destination);
         else if (pressed & HidNpadButton_X) startExtraction(true);
         else if (pressed & HidNpadButton_Y) startExtraction(false);

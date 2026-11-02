@@ -79,6 +79,11 @@ int main() {
     changeScreen(Screen::ExtractPrompt); handleInput(HidNpadButton_A);
     assert(choosingExtraction && screen == Screen::Destination);
     handleInput(HidNpadButton_X); assert(screen == Screen::ExtractReview);
+    assert(!deleteOriginalAfterExtraction);
+    int preferencesBefore = saved;
+    handleInput(HidNpadButton_A); assert(deleteOriginalAfterExtraction && saved > preferencesBefore);
+    assert(screen == Screen::ExtractReview && extractionChoices == 0);
+    handleInput(HidNpadButton_A); assert(!deleteOriginalAfterExtraction);
     handleInput(HidNpadButton_B); assert(screen == Screen::Destination && choosingExtraction);
     handleInput(HidNpadButton_B); assert(screen == Screen::ExtractPrompt && !choosingExtraction);
     handleInput(HidNpadButton_A); handleInput(HidNpadButton_X); handleInput(HidNpadButton_Y);

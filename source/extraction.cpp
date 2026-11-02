@@ -15,6 +15,7 @@ std::atomic<bool> stop{false}, hold{false}, done{false};
 ExtractProgress workerProgress;
 std::string source, destination, downloadPath;
 bool overwrite = false;
+bool deleteOriginalTask = false;
 uint32_t sampleTime = 0;
 uint64_t sampleBytes = 0;
 double visual = 0;
@@ -70,6 +71,7 @@ void leaveExtractionDestination() {
 }
 void startExtraction(bool replace) {
     source = jobs[extractionJob].target; destination = path; overwrite = replace;
+    deleteOriginalTask = deleteOriginalAfterExtraction;
     choosingExtraction = false; extractionPaused = false; stop = false; hold = false; done = false;
     extractionProgress = {}; workerProgress = {}; extractionSpeed = visual = 0;
     sampleBytes = 0; sampleTime = SDL_GetTicks(); mutexInit(&progressMutex);
@@ -102,6 +104,10 @@ void pumpExtraction() {
     else if (extractionProgress.phase == ExtractPhase::Cancelled) job.extractionResult = "Extraction cancelled; completed files kept";
     else job.extractionResult = "Extraction failed: " + extractionProgress.error;
     if (extractionProgress.phase == ExtractPhase::Done && !extractionProgress.error.empty()) job.extractionResult += " / "+extractionProgress.error;
+    auto cleanup = finishArchive(source, extractionProgress, deleteOriginalTask, stop.load());
+    if (cleanup == ArchiveCleanup::Deleted) job.extractionResult += "; original deleted";
+    else if (cleanup == ArchiveCleanup::Failed) job.extractionResult += "; could not delete original";
+    else job.extractionResult += "; archive kept";
     path = downloadPath; appletSetMediaPlaybackState(false); offerExtraction();
 }
 void shutdownExtraction() {
@@ -116,14 +122,14 @@ void renderExtraction() {
         card(48,168,w,438,panel);
         text(job.asset.name,80,206,ink,w-64,32);
         text(review ? "How should existing files be handled?" : "Extract this archive now?",80,282,accent,w-64,22);
-        text("The downloaded archive will be kept.",80,338,muted,w-64);
+        text((review ? "[A] Original: " : "Original: ") + std::string(deleteOriginalAfterExtraction ? "delete after successful extraction" : "keep after extraction"),80,338,muted,w-64);
         text(review ? "[X] Extract and replace existing files" : "[A] Choose extraction destination",80,408,ink,w-64);
         text(review ? "[Y] Extract and skip existing files" : "[B] Keep this archive without extracting",80,454,ink,w-64);
         text(review ? "[B] Choose a different destination" : "[Y] Skip extraction for all remaining archives",80,500,muted,w-64,18);
         sidebar(review ? "EXTRACT TO" : "OPTIONAL EXTRACTION",review ? "Your destination" : "Keep or unpack",
-            {review ? path : "ZIP / 7z / RAR / TAR",review ? (freeSpace < 0 ? "Free space unknown" : bytes(freeSpace)+" free") : "GZ / BZ2 / XZ / ZST / LZ4","Folder structure is preserved","Original archives are kept"});
+            {review ? path : "ZIP / 7z / RAR / TAR",review ? (freeSpace < 0 ? "Free space unknown" : bytes(freeSpace)+" free") : "GZ / BZ2 / XZ / ZST / LZ4","Folder structure is preserved",deleteOriginalAfterExtraction ? "Delete only on full success" : "Original archives are kept"});
         if (review) text(path,48,616,accent,1184,18);
-        footer(review ? "[X] Replace existing    [Y] Skip existing    [B] Back" : "[A] Choose location    [B] Keep archive    [Y] Skip all");
+        footer(review ? "[A] Keep / delete original    [X] Replace    [Y] Skip existing    [B] Back" : "[A] Choose location    [B] Keep archive    [Y] Skip all");
         return;
     }
     const auto& p = extractionProgress;
@@ -143,7 +149,7 @@ void renderExtraction() {
     if (known && !extractionPaused && extractionSpeed > 1 && p.processedBytes < p.totalBytes)
         detail += "  /  ~"+std::to_string(static_cast<uint64_t>((p.totalBytes-p.processedBytes)/extractionSpeed))+"s left";
     text(detail,80,490,accent,w-64,18); text("To "+destination,80,550,muted,w-64,18);
-    sidebar("EXTRACTION",scanning ? "Inspecting" : "Progress",{bytes(p.writtenBytes)+" written",p.sizeKnown ? bytes(p.totalBytes)+" total" : "Unpacked size unknown","A  Pause / resume","Original archive is kept"});
+    sidebar("EXTRACTION",scanning ? "Inspecting" : "Progress",{bytes(p.writtenBytes)+" written",p.sizeKnown ? bytes(p.totalBytes)+" total" : "Unpacked size unknown","A  Pause / resume",deleteOriginalTask ? "Delete original on full success" : "Original archive is kept"});
     footer("[A] Pause / resume    [B] Cancel extraction");
     if (screen == Screen::ExtractCancel) {
         rect(0,92,1280,558,SDL_Color{0,0,0,185}); card(280,225,720,270,panel);

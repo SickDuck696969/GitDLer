@@ -71,6 +71,7 @@ void scrollNotes(u64 pressed);
 
 // extraction.cpp: archive prompts, destination mode, worker lifecycle and progress
 extern bool choosingExtraction, extractionPaused;
+extern bool deleteOriginalAfterExtraction;
 extern int extractionJob;
 extern ExtractProgress extractionProgress;
 extern double extractionSpeed;
